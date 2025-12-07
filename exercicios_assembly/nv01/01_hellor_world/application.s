@@ -6,7 +6,7 @@ _start:
     MOV rax, 0x01
     MOV rdi, 0x01
     LEA rsi, [hello_str]
-    MOV rdx, 15
+    MOV rdx, 14
     SYSCALL
 
     # syscall exit
@@ -15,4 +15,4 @@ _start:
     SYSCALL
 
 .section .data          # Esse section é para dados estáticos e deve ficar no fim do codigo
-    hello_str: .asciz "Hellow, world!\n"
+    hello_str: .asciz "Hello, world!\n"
