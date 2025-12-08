@@ -24,12 +24,19 @@ _start:
     MOV [rcx], al                   # Grava '1' na váriável buffer usando o ponteiro [rcx] que tem o enderenço de buffer
     INC rcx                         
 
+    # Converte o digito de menor, o valor que ficou como resto da divisãoque ficou guardado em 'rdx' podemos pegar no menor byte de 'rdx' usando o registrador 'dl'.
+    ADD dl, '0'
+    MOV [rcx], dl
+    INC rcx
+
+    # Adiciona a quebra de linha
+    MOV byte ptr [rcx], 0x0a        # Adiciona '\n' - 0x0A corresponde a 10 em hexadecimal
 
     # Imprime valor do buffer
     MOV rax, 0x01
     MOV rdi, 0x01
     LEA rsi, [buffer]
-    MOV rdx, 0x02
+    MOV rdx, 0x03                   # O tamanho total da string 2 digitos + \n
     SYSCALL
 
     MOV rax, 0x3c
