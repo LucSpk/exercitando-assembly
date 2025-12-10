@@ -11,8 +11,11 @@ _start:
     MOV rax, 0 
     MOV rdi, 0
     LEA rsi, [buffer]
-    MOV rdx, 2
+    MOV rdx, 1
     SYSCALL
+
+    INC rcx
+    MOV byte ptr [rcx], 0x0a
 
     MOV rax, 1
     MOV rdi, 1
