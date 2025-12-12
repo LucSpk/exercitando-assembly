@@ -8,14 +8,14 @@
 _start:
     MOV rax, 0 
     MOV rdi, 0
-    MOV rsi, buffer
+    LEA rsi, [buffer]
     MOV rdx, 1
     SYSCALL
 
     # debug: print primeiro byte em HEX
-    MOV al, byte ptr [buffer]
+    #MOV al, byte ptr [buffer]
     
-    CMP al, 'a' 
+    CMP byte ptr [rsi], 'a'
     JNE entrada_diferente
 
 entrada_igual:
