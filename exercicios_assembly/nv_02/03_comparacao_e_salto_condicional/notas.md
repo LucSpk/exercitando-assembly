@@ -93,10 +93,10 @@ JL less_signed
 Observações rápidas sobre saltos condicionais:
 - `JE` / `JZ`: salto quando `ZF == 1` (igualdade)
 - `JNE` / `JNZ`: salto quando `ZF == 0` (diferença)
-- `JB` / `JC` / `JNAE`: salto quando `CF == 1` (unsigned less)
-- `JA` / `JNC` / `JNBE`: salto quando `CF == 0` e `ZF == 0` (unsigned greater)
-- `JL` / `JNGE`: salto quando `SF != OF` (signed less)
-- `JG` / `JNLE`: salto quando `ZF == 0` e `SF == OF` (signed greater)
+- `JB` / `JC` / `JNAE`: salto quando `CF == 1` (unsigned less - menor sem sinal)
+- `JA` / `JNC` / `JNBE`: salto quando `CF == 0` e `ZF == 0` (unsigned greater - maior sem sinal)
+- `JL` / `JNGE`: salto quando `SF != OF` (signed less - menor com sinal)
+- `JG` / `JNLE`: salto quando `ZF == 0` e `SF == OF` (signed greater = maior com sinal)
 
 ## Exemplo aplicado (trecho do `application.s` corrigido)
 
