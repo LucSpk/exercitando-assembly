@@ -126,3 +126,6 @@ Se quiser, eu aplico pequenas mudanças no arquivo `application.s`:
 - remover `JNE` extra e reorganizar os rótulos, ou
 - adaptar para ler até o newline e comparar o primeiro caractere.
 Diga qual opção prefere e eu faço o patch.
+
+
+_Notas criadas com base no conteúdo discutido com auxilio do ChatGPT._
