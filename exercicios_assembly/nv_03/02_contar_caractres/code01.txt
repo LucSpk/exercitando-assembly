@@ -1,0 +1,83 @@
+# 2. Função que conta caracteres (strlen)
+#   Percorrer buffer char a char até encontrar 0x0A (ENTER).
+#   Retornar tamanho em rax.
+
+.global _start
+.intel_syntax noprefix
+
+.section .bss
+    buffer: .skip 32
+    outbuf: .skip 16
+
+.section .text
+_start: 
+    # read up to 32 bytes from stdin into buffer
+    mov rax, 0          # syscall: read
+    mov rdi, 0          # fd = stdin
+    lea rsi, [buffer]
+    mov rdx, 32
+    syscall             # rax = bytes_read
+
+    # if rax <= 0 -> exit
+    cmp rax, 0
+    jle .exit
+
+    # rcx = pointer to current char, r9 = remaining bytes, r8 = counter
+    lea rcx, [buffer]
+    mov r9, rax         # remaining bytes
+    xor r8, r8          # counter = 0
+
+.scan_loop:
+    mov al, byte ptr [rcx]
+    cmp al, 0x0A        # newline?
+    je .count_done
+    inc r8              # counter++
+    inc rcx
+    dec r9
+    cmp r9, 0
+    jne .scan_loop
+
+.count_done:
+    # r8 contains the count (0..32)
+    # convert r8 (number) to ASCII decimal in outbuf
+    mov rax, r8
+    cmp rax, 0
+    jne .conv_loop_start
+    # special case zero
+    lea rdi, [outbuf]
+    mov byte ptr [rdi], '0'
+    mov byte ptr [rdi+1], 0x0A
+    mov rsi, rdi
+    mov rdx, 2
+    jmp .do_write
+
+.conv_loop_start:
+    lea rdi, [outbuf+15]    # write digits from the end
+    mov rcx, 0              # digit count
+.conv_loop:
+    xor rdx, rdx
+    mov rbx, 10
+    div rbx                 # rax = quotient, rdx = remainder
+    add dl, '0'
+    dec rdi
+    mov byte ptr [rdi], dl
+    inc rcx                 # digits++
+    mov rax, rax            # quotient already in rax
+    cmp rax, 0
+    jne .conv_loop
+    # append newline after digits
+    lea rsi, [rdi]
+    mov byte ptr [rdi+rcx], 0x0A
+    mov rdx, rcx
+    inc rdx                 # include newline
+
+.do_write:
+    # write(1, rsi, rdx)
+    mov rax, 1
+    mov rdi, 1
+    syscall
+
+.exit:
+    mov rax, 60
+    xor rdi, rdi
+    syscall
