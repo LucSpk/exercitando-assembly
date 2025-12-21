@@ -24,53 +24,63 @@ le_do_teclado:
 
 verificar_erro:
     # if rax <= 0 -> exit
-    # Caso haja algum erro na hora de ler do teclado rax fica menor que 0
+    # Caso haja algum erro ou EOF na hora de ler do teclado rax fica menor que 0
+    # EOF = End of File - rax = 0 -> EOF -- Em arquivos é quando não há mais bytes para ler | No teclado Ctrl + D (Linux / macOS) ou Ctrl + Z + Enter (Windows)
     CMP rax, 0
-    # Vai para o fim caso haja erro
-    JLE .exit
+    # Vai para o fim caso haja erro JLE -> Jump Low ou Equal (<=)
+    # JLE .exit
 
+    JL .exit
 
 imprime_valor_guardado_em_rax:
     # --- imprimir o valor retornado em rax (bytes lidos) ---
     # rax guarda o numero de bytes inseridos na syscall read
-    MOV r10, rax            #; salvar bytes_read em r10
-    MOV rax, r10            #; preparar para conversão
+    MOV r10, rax            # salvar bytes_read em r10 como backup 
+
+    # Logo será feita uma divisao, o que destroi o valor que existe em rax, por isso é salvo o valor em r10
+    
+    # Caso especial de rax diferente de 0, então pula para a impressao
     CMP rax, 0
-    jne .print_conv_start
-    #; caso especial 0
-    lea rsi, [outbuf]
-    mov byte ptr [rsi], '0'
-    mov byte ptr [rsi+1], 0x0A
-    mov rdx, 2
-    mov rdi, 1
-    mov rax, 1
-    syscall
-    mov rax, r10            #; restaurar bytes_read
-    #; fim impressão
+    JNE .print_conv_start
+    
+    # Esse caso especial é somente didático, ja que se o rax for igual a 0 o código pula para o fim
+    
+    LEA rsi, [outbuf]               # Salva o endereço da memória do outbuf para rsi
+    MOV byte ptr [rsi], '0'         # Move '0' em ascii para o endereço de memória de outbuf
+    MOV byte ptr [rsi+1], 0x0A      # Adiciona a quebra de linha no segundo espaço de memória do outbuf
+    
+    MOV rdx, 2
+    MOV rdi, 1
+    MOV rax, 1
+    SYSCALL
+
+    JMP .exit_print
     
 .print_conv_start:
-    mov rcx, 0
-    lea rdi, [outbuf+15]
+    MOV rcx, 0
+    LEA rdi, [outbuf+15]
+
 .print_conv_loop:
-    xor rdx, rdx
-    mov rbx, 10
-    div rbx                 #; rax = quotient, rdx = remainder
-    add dl, '0'
-    dec rdi
-    mov byte ptr [rdi], dl
-    inc rcx
-    cmp rax, 0
-    jne .print_conv_loop
-    lea rsi, [rdi]
-    mov byte ptr [rdi+rcx], 0x0A
-    mov rdx, rcx
-    inc rdx
-    #; write the decimal string
-    mov rax, 1
-    mov rdi, 1
-    syscall
-    mov rax, r10            # ; restaurar bytes_read
-    #; --- fim imprimir valor em rax ---
+    XOR rdx, rdx
+    MOV rbx, 10
+    DIV rbx
+    ADD dl, '0'
+    DEC rdi
+    MOV byte ptr [rdi], dl
+    INC rcx
+    CMP rax, 0
+    JNE .print_conv_loop
+    LEA rsi, [rdi]
+    MOV byte ptr [rdi+rcx], 0x0A
+    MOV rdx, rcx
+    INC rdx
+    MOV rax, 1
+    MOV rdi, 1
+    SYSCALL
+    MOV rax, r10 
+
+.exit_print:
+    MOV rax, r10
 
 .exit:
     MOV rax, 0x3C
