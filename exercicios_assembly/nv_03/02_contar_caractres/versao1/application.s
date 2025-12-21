@@ -55,29 +55,34 @@ imprime_valor_guardado_em_rax:
     SYSCALL
 
     JMP .exit_print
-    
+
+# Converte o valor no registrador em asciII (Processo presnete no nivel 2 exercicio 1)
 .print_conv_start:
-    MOV rcx, 0
-    LEA rdi, [outbuf+15]
+    MOV rcx, 0                      # Zera o contador de digitos
+    LEA rdi, [outbuf+15]            # Move para o penultimo espaço de memória
 
 .print_conv_loop:
-    XOR rdx, rdx
-    MOV rbx, 10
+    XOR rdx, rdx 
+    MOV rbx, 10 
     DIV rbx
+
     ADD dl, '0'
+    
     DEC rdi
     MOV byte ptr [rdi], dl
     INC rcx
+    
     CMP rax, 0
     JNE .print_conv_loop
+    
     LEA rsi, [rdi]
     MOV byte ptr [rdi+rcx], 0x0A
+    INC rcx
     MOV rdx, rcx
-    INC rdx
+    
     MOV rax, 1
     MOV rdi, 1
     SYSCALL
-    MOV rax, r10 
 
 .exit_print:
     MOV rax, r10
