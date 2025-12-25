@@ -20,22 +20,22 @@ _start:
     CMP rax, 0
     JLE .exit
 
-    MOV r9, rax
-
-    LEA rcx, [buffer]
-    MOV al, byte ptr [rcx]
-
-    CMP al, 0x0a
-    JNE .invert_loop
-
-    LEA rdi, [outbuf]
-    MOV byte ptr [rdi], 0x0a
-
-    MOV rsi, rdi
-    MOV rax, 0x01
-    MOV rdi, 0x01
-    MOV rdx, 0x01
-    SYSCALL
+#    MOV r9, rax
+#
+#    LEA rcx, [buffer]
+#    MOV al, byte ptr [rcx]
+#
+#    CMP al, 0x0a
+#    JNE .invert_loop
+#
+#    LEA rdi, [outbuf]
+#    MOV byte ptr [rdi], 0x0a
+#
+#    MOV rsi, rdi
+#    MOV rax, 0x01
+#    MOV rdi, 0x01
+#    MOV rdx, 0x01
+#    SYSCALL
 
 .invert_loop_start:
     LEA rdi, [outbuf + 31]
@@ -44,7 +44,8 @@ _start:
 .invert_loop:
     
     DEC rdi
-    MOV rdi, rcx
+    mov al, [rcx]
+    mov [rdi], al
 
     INC rcx
     INC r8
@@ -55,7 +56,7 @@ _start:
 
 .print_string:
     LEA rsi, [rdi] 
-    MOV byte ptr [rdi + rcx], 0x0a 
+    MOV byte ptr [rdi + r8], 0x0a 
     
     MOV rdx, r8
     INC r8 
