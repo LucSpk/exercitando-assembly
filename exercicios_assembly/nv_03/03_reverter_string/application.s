@@ -46,6 +46,7 @@ _start:
     DEC rsi
     INC rdi
     
+    # - Veja as notas para entender melhor
     LOOP .invert_loop
 
     MOV byte ptr [rdi], 0x0A
