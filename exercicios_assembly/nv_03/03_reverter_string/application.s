@@ -20,46 +20,41 @@ _start:
     CMP rax, 0
     JLE .exit
 
-#    MOV r9, rax
-#
-#    LEA rcx, [buffer]
-#    MOV al, byte ptr [rcx]
-#
-#    CMP al, 0x0a
-#    JNE .invert_loop
-#
-#    LEA rdi, [outbuf]
-#    MOV byte ptr [rdi], 0x0a
-#
-#    MOV rsi, rdi
-#    MOV rax, 0x01
-#    MOV rdi, 0x01
-#    MOV rdx, 0x01
-#    SYSCALL
+    LEA rsi, [buffer]
+    xor rcx, rcx        # contador = 0
+
+.find_len:
+    MOV al, byte ptr [rsi + rcx]
+    CMP al, 0x0A
+    JE .len_found
+    INC rcx
+    JMP .find_len
+
+.len_found:
+    MOV r8, rcx
 
 .invert_loop_start:
-    LEA rdi, [outbuf + 31]
-    XOR r8, r8
+    LEA rsi, [buffer + r8 - 1]
+    LEA rdi, [outbuf]
+    MOV rcx, r8                  
 
 .invert_loop:
+     
+    MOV al, byte ptr [rsi]
+    MOV byte ptr [rdi], al
+
+    DEC rsi
+    INC rdi
     
-    DEC rdi
-    mov al, [rcx]
-    mov [rdi], al
+    LOOP .invert_loop
 
-    INC rcx
-    INC r8
-
-    DEC r9
-    CMP r9, 0
-    JNE .invert_loop
+    MOV byte ptr [rdi], 0x0A
+    INC rdi
 
 .print_string:
-    LEA rsi, [rdi] 
-    MOV byte ptr [rdi + r8], 0x0a 
-    
+    LEA rsi, [outbuf] 
     MOV rdx, r8
-    INC r8 
+    INC rdx 
 
     MOV rax, 0x01
     MOV rdi, 0x01
