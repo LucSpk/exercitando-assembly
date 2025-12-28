@@ -1,3 +1,9 @@
+# 04. Implementar stack frame manual
+# - O stack frame é uma estrutura usada por cada função para guardar seu próprio estado de execução, incluindo:
+#       para onde ela deve retornar
+#       os dados locais da função
+#       e o estado necessário para continuar corretamente após chamadas a outras funções
+
 .global _start
 .intel_syntax noprefix
 
