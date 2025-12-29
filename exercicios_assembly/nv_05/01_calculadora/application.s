@@ -40,6 +40,9 @@ _start:
     MOV rsi, 32
     CALL .read_numero
 
+    LEA rdi, [num_01]
+    CALL .strip_newline
+
     LEA rdi, [num_02_msg]
     MOV rsi, num_02_msg_len 
     CALL .print_string
@@ -48,10 +51,73 @@ _start:
     MOV rsi, 32
     CALL .read_numero
 
+    LEA rdi, [num_02]
+    CALL .strip_newline
+
     # ---------- Epilogo ----------
     LEAVE
     RET
 
+# ==================================================
+# long ascii_to_int(char *buffer)
+# RDI = buffer
+# return RAX = valor inteiro
+# ==================================================
+.ascii_to_int:
+    PUSH rbp
+    MOV rbp, rsp
+    SUB rsp, 16
+
+    XOR rax, rax        # resultado = 0
+    XOR rcx, rcx        # índice = 0
+
+.convert_loop:
+    MOV dl, byte ptr [rdi + rcx]
+    CMP dl, 0x00        # fim da string?
+    JE .done_ascii_to_int
+
+    SUB dl, '0'         # char -> número
+    IMUL rax, rax, 10
+    ADD rax, rdx
+
+    INC rcx
+    JMP .convert_loop
+
+.done_ascii_to_int:
+    LEAVE
+    RET
+
+# ==================================================
+# void strip_newline(char *buffer)
+# RDI = buffer
+# ==================================================
+.strip_newline:
+    PUSH rbp
+    MOV rbp, rsp
+    SUB rsp, 16
+
+    MOV rcx, 0              # índice = 0
+
+.strip_loop:
+    MOV al, byte ptr [rdi + rcx]
+    CMP al, 0x0A            # '\n'?
+    JE .replace_zero
+    CMP al, 0x00            # fim da string?
+    JE .done_strip_newline
+    INC rcx
+    JMP .strip_loop
+
+.replace_zero:
+    MOV byte ptr [rdi + rcx], 0x00
+
+.done_strip_newline:
+    LEAVE
+    RET
+
+# ==================================================
+# void read_numero(char *buffer)
+# RDI = buffer
+# ==================================================
 .read_numero:
     # ---------- Prologo ----------
     PUSH rbp
