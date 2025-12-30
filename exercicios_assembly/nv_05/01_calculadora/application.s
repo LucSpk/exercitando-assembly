@@ -20,16 +20,64 @@
     op_msg: .asciz "Digite a operacao (+ - * /): "
     op_msg_len = . - op_msg - 1
 
+    resltado_msg_01: .asciz "Resultado da operação ( "
+    resltado_msg_01_len = . - resltado_msg_01 - 1
+
+    resltado_msg_02: .asciz " ) = "
+    resltado_msg_02_len = . - resltado_msg_02 - 1
+
+    resltado_msg_espaco: .asciz " "
+    resltado_msg_espaco_len = . - resltado_msg_espaco - 1
+
+
 .section .text
 _start:
     
     CALL .recebe_valores
     CALL .executa_operacao
-
-    MOV rdi, rax        # passa resultado
-    CALL .print_int
+    MOV r13, rax
+    CALL .imprime_saida
 
     CALL .exit
+
+.imprime_saida:
+    PUSH rbp
+    MOV rbp, rsp
+    SUB rsp, 32
+
+    LEA rdi, [resltado_msg_01]
+    MOV rsi, resltado_msg_01_len 
+    CALL .print_string
+
+    LEA rdi, [num_01]
+    MOV rsi, 32 
+    CALL .print_string
+
+    LEA rdi, [resltado_msg_espaco]
+    MOV rsi, resltado_msg_espaco_len 
+    CALL .print_string
+
+    LEA rdi, [operador]
+    MOV rsi, 4 
+    CALL .print_string
+
+    LEA rdi, [resltado_msg_espaco]
+    MOV rsi, resltado_msg_espaco_len 
+    CALL .print_string
+
+    LEA rdi, [num_02]
+    MOV rsi, 32 
+    CALL .print_string
+
+    LEA rdi, [resltado_msg_02]
+    MOV rsi, resltado_msg_02_len 
+    CALL .print_string
+
+    MOV rdi, r13        # passa resultado
+    CALL .print_int
+    
+    LEAVE
+    RET
 
 # ==================================================
 # void print_int(long value)
