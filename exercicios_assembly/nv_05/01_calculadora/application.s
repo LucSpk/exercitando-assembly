@@ -5,6 +5,7 @@
     num_01: .skip 32
     num_02: .skip 32
     operador: .skip 4
+    outbuf: .skip 32
 
 .section .data
     calculadora_msg: .asciz "### CALCULADORA ###\n"
@@ -23,7 +24,100 @@
 _start:
     
     CALL .recebe_valores
+    CALL .executa_operacao
+
+    MOV rdi, rax        # passa resultado
+    CALL .print_int
+
     CALL .exit
+
+# ==================================================
+# void print_int(long value)
+# RDI = valor inteiro
+# ==================================================
+.print_int:
+    PUSH rbp
+    MOV rbp, rsp
+    SUB rsp, 32
+
+    MOV rax, rdi              # número a imprimir
+    LEA rsi, [outbuf + 31]    # ponteiro no fim do buffer
+    MOV byte ptr [rsi], 0x0A  # '\n'
+
+.convert_loop_print_int:
+    XOR rdx, rdx
+    MOV rcx, 10
+    DIV rcx                   # rax = rax / 10 | rdx = resto
+
+    ADD dl, '0'
+    DEC rsi
+    MOV byte ptr [rsi], dl
+
+    TEST rax, rax
+    JNZ .convert_loop_print_int
+
+    # calcular tamanho
+    LEA rdx, [outbuf + 32]
+    SUB rdx, rsi
+
+    # write(1, rsi, rdx)
+    MOV rax, 1
+    MOV rdi, 1
+    SYSCALL
+
+    LEAVE
+    RET
+
+.executa_operacao:
+    # ---------- Prologo ----------
+    PUSH rbp
+    MOV rbp, rsp
+    SUB rsp, 16
+    
+    # ---------- Corpo ----------
+    MOV al, byte ptr [operador]
+
+    CMP al, '+'
+    JE .op_soma
+
+    CMP al, '-'
+    JE .op_sub
+
+    CMP al, '*'
+    JE .op_mul
+
+    CMP al, '/'
+    JE .op_div
+
+    JMP .fim_operacao
+
+.op_soma:
+    MOV rax, rbx
+    ADD rax, r12
+    JMP .fim_operacao
+
+.op_sub:
+    MOV rax, rbx
+    SUB rax, r12
+    JMP .fim_operacao
+
+.op_mul:
+    MOV rax, rbx
+    IMUL rax, r12
+    JMP .fim_operacao
+
+.op_div:
+    MOV rax, rbx
+    XOR rdx, rdx
+    DIV r12
+    JMP .fim_operacao
+
+.fim_operacao:
+    # resultado está em RAX
+    
+    # ---------- Epilogo ----------
+    LEAVE
+    RET
 
 .recebe_valores:
     # ---------- Prologo ----------
@@ -47,6 +141,10 @@ _start:
     LEA rdi, [num_01]
     CALL .strip_newline
 
+    LEA rdi, [num_01]
+    CALL .ascii_to_int
+    MOV rbx, rax
+
     LEA rdi, [num_02_msg]
     MOV rsi, num_02_msg_len 
     CALL .print_string
@@ -57,6 +155,10 @@ _start:
 
     LEA rdi, [num_02]
     CALL .strip_newline
+
+    LEA rdi, [num_02]
+    CALL .ascii_to_int
+    MOV r12, rax
 
     LEA rdi, [op_msg]
     MOV rsi, op_msg_len
