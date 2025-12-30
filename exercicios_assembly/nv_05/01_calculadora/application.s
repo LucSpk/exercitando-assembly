@@ -4,6 +4,7 @@
 .section .bss
     num_01: .skip 32
     num_02: .skip 32
+    operador: .skip 4
 
 .section .data
     calculadora_msg: .asciz "### CALCULADORA ###\n"
@@ -14,6 +15,9 @@
 
     num_02_msg: .asciz "Digite o segundo numero: \0"
     num_02_msg_len = . - num_02_msg - 1
+
+    op_msg: .asciz "Digite a operacao (+ - * /): "
+    op_msg_len = . - op_msg - 1
 
 .section .text
 _start:
@@ -52,6 +56,17 @@ _start:
     CALL .read_numero
 
     LEA rdi, [num_02]
+    CALL .strip_newline
+
+    LEA rdi, [op_msg]
+    MOV rsi, op_msg_len
+    CALL .print_string
+
+    LEA rdi, [operador]
+    MOV rsi, 4
+    CALL .read_numero
+
+    LEA rdi, [operador]
     CALL .strip_newline
 
     # ---------- Epilogo ----------
