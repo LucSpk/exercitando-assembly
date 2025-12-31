@@ -8,24 +8,30 @@
     
 .section .text
 _start:
-    CALL .read_loop
-    JMP .exit
+    CALL    .read_loop
+    JMP     .exit
 
 .exit:
-    MOV rax, 0x3c
-    XOR rdi, rdi
+    MOV     rax, 0x3c
+    XOR     rdi, rdi
     SYSCALL
 
 .read_loop:
-    MOV rcx, 0
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+
+    MOV     qword ptr [rbp - 8], 0
 
 .loop:
-    CMP rcx, 5
-    JE .fim_leitura
+    MOV     r12, [rbp - 8]
+    CMP     r12, 5
+    JE      .fim_leitura
 
 
-    INC rcx
-    JMP .loop
+    INC     qword ptr [rbp - 8]
+    JMP     .loop
 
 .fim_leitura:
+    LEAVE
     RET

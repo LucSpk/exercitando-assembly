@@ -113,3 +113,11 @@ Usados para:
 | arg5       | R8          |
 | arg6       | R9          |
 | retorno    | RAX         |
+
+## 🔹 Tamanhos de dados ##
+| Tipo  | Tamanho |
+| ----- | ------- |
+| byte  | 1       |
+| word  | 2       |
+| dword | 4       |
+| qword | 8       |
