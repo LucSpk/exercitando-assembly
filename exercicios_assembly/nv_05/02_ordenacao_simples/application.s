@@ -28,10 +28,28 @@ _start:
     CMP     r12, 5
     JE      .fim_leitura
 
+    LEA     rsi, [lista_leitura]
+    MOV     r13, 2
+    CALL    .read_inteiro
 
     INC     qword ptr [rbp - 8]
     JMP     .loop
 
 .fim_leitura:
+    LEAVE
+    RET
+
+.read_inteiro:
+    
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+
+    MOV     rax, 0
+    MOV     rdi, 0
+    # rsi deve ser atribuido na chamada da função
+    MOV     rdx, r13
+    SYSCALL
+
     LEAVE
     RET
