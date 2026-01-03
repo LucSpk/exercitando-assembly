@@ -10,6 +10,7 @@
 _start:
     CALL    .read_loop
     CALL    .sort_lista
+    CALL    .print_lista
     JMP     .exit
 
 .exit:
@@ -17,7 +18,72 @@ _start:
     XOR     rdi, rdi
     SYSCALL
 
+#################################################################
+# Imprime a lista ordenada
+#################################################################
+.print_lista:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 16
 
+    MOV     rdx, rax
+    MOV     byte ptr [rsi], 0x0A   # '\n'
+    MOV     rax, 1
+    MOV     rdi, 1
+    SYSCALL
+
+    XOR     r8, r8 
+
+.print_loop:
+    CMP     r8, 5
+    JGE     .done
+
+    MOV     rdi, [lista + r8 * 8]       # rax = lista[i]
+    CALL    .int_para_ascii             # retorna tamanho em rax
+
+    # write(tamanho, outbuf, stdout)
+    MOV     rdx, rax
+    LEA     rsi, [outbuf]
+    MOV     rax, 1
+    MOV     rdi, 1
+    SYSCALL
+
+    INC     r8
+    JMP     .print_loop
+
+#################################################################
+# Converte inteiro em ASCII e Imprime
+#   - Recebe o enderenço da entrada em rdi
+#################################################################
+.int_para_ascii:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+
+    MOV     rax, rdi
+    LEA     rsi, [outbuf + 31]
+    MOV     byte ptr [rsi], 0x0A
+
+.convert_loop_print_int:
+    XOR     rdx, rdx
+    MOV     rcx, 10
+    DIV     rcx
+
+    ADD     dl, '0'
+    DEC     rsi
+    MOV     byte ptr [rsi], dl
+
+    TEST    rax, rax
+    JNZ     .convert_loop_print_int
+
+    LEA     rdx, [outbuf + 32]
+    SUB     rdx, rsi
+
+    MOV rax, 1
+    MOV rdi, 1
+    SYSCALL
+
+    JMP .done
 
 #################################################################
 # Ordena lista 
