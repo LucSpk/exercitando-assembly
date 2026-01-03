@@ -9,6 +9,7 @@
 .section .text
 _start:
     CALL    .read_loop
+    CALL    .sort_lista
     JMP     .exit
 
 .exit:
@@ -16,6 +17,52 @@ _start:
     XOR     rdi, rdi
     SYSCALL
 
+
+
+#################################################################
+# Ordena lista 
+#################################################################
+.sort_lista:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+
+    XOR     r8, r8                          # - Zera variável para o loop externo (i = 0)
+
+.loop_externo: 
+    CMP     r8, 4
+    JGE     .done
+
+    XOR     r9, r9                          # - Zera variável para o loop interno (j = 0)
+
+.loop_interno: 
+    MOV     r10, 4
+    SUB     r10, r8                         # - Cada vez que o loop externo roda o maior elemento já foi “empurrado” para o final então não precisa mais comparar ele.
+    CMP     r9, r10
+    JGE     .proximo_i
+
+    # Indice sempre x8 para considerar o espaço dado na lista
+    MOV     rax, [lista + r9 * 8]           # - rax <= lista[j]
+    MOV     rdx, [lista + r9 * 8 + 8]       # - rdx <= lista[j + 1]
+
+    CMP     rax, rdx                        # - Se rax < rdx então mantem ordem e retorna para o inicio
+    JLE     .incrementa_e_retorna
+
+    # Faz operação de troca 
+    MOV     [lista + r9 * 8], rdx           # - lista[j]        <= rdx
+    MOV     [lista + r9 * 8 + 8], rax       # - lista[j + 1]    <= rax
+
+.incrementa_e_retorna:
+    INC     r9
+    JMP     .loop_interno
+
+.proximo_i:
+    INC     r8
+    JMP     .loop_externo
+
+#################################################################
+# Faz leitura do teclado e converte para inteiro
+#################################################################
 .read_loop:
     PUSH    rbp
     MOV     rbp, rsp
@@ -26,7 +73,7 @@ _start:
 .loop:
     MOV     r10, [rbp - 8]
     CMP     r10, 5
-    JE      .fim_leitura
+    JE      .done
 
     # rdi recebe o local onde sera guardado a entrada 
     # rdx o tamanho da entrada 
@@ -44,15 +91,17 @@ _start:
     CALL    .converte_para_inteiro
 
     MOV     r10, [rbp - 8]
-    MOV     [lista + r10 * 8], rax
+    MOV     [lista + r10 * 8], rax          # - Da um espaço de 8 entre o inicio de cada numero
 
     INC     qword ptr [rbp - 8]
     JMP     .loop
 
-.fim_leitura:
-    LEAVE
-    RET
 
+#################################################################
+# Faz leitura do teclado
+#   - Recebe o enderenço da entrada em rdi
+#   - Tamanho da entrada em rdx
+#################################################################
 .read_inteiro:
     PUSH    rbp
     MOV     rbp, rsp
@@ -66,9 +115,13 @@ _start:
 
     MOV byte ptr [rsi + rax], 0
 
-    LEAVE
-    RET
+    JMP .done
 
+
+#################################################################
+# Remove o '\n' da entrada caso exista
+#   - Recebe o enderenço da entrada em rdi
+#################################################################
 .remove_newline:
     PUSH    rbp
     MOV     rbp, rsp
@@ -92,12 +145,14 @@ _start:
     MOV     byte ptr [rdi + rcx], 0x00      # Subistitui o '\n' por um caracter null
 
 .fim_remove_newline:
-    LEAVE
-    RET
+    JMP .done
 
-# Converte de ascii para inteiro
-#   Entrada -> rdi
-#   Saida   -> rax
+
+#################################################################
+# Converte valor em ascii para inteiro
+#   - Entrada:  rdi
+#   - Saida:    rax
+#################################################################
 .converte_para_inteiro:
     PUSH    rbp
     MOV     rbp, rsp
@@ -110,7 +165,7 @@ _start:
     XOR     rdx, rdx
     MOV     dl, byte ptr [rdi + rcx]
     CMP     dl, 0x00
-    JE      .fim_conversao_inteiro
+    JE      .done
 
     SUB     dl, '0'
     IMUL    rax, rax, 10                    # rax = rax * 10
@@ -119,6 +174,10 @@ _start:
     INC     rcx
     JMP     .converte_para_inteiro_loop
 
-.fim_conversao_inteiro:
+
+#################################################################
+# Finaliza função com stack frame
+#################################################################
+.done:
     LEAVE
     RET
