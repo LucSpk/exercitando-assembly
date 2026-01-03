@@ -80,3 +80,25 @@ _start:
 .fim_remove_newline:
     LEAVE
     RET
+
+.converte_para_inteiro:
+    PUSH    rbp
+    MOV     rbp, rsi
+    SUB     rsp, 16
+
+    XOR     rcx, rcx
+
+.converte_para_inteiro_loop:
+    MOV     al, byte ptr [rdi + rcx]
+    CMP     al, 0x00
+    JE      .fim_conversao_inteiro
+
+    
+    SUB     rdi, '0'
+
+    INC     rcx
+    JMP     .converte_para_inteiro_loop
+
+.fim_conversao_inteiro:
+    LEAVE
+    RET
