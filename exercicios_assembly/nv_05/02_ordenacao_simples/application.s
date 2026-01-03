@@ -24,15 +24,27 @@ _start:
     MOV     qword ptr [rbp - 8], 0
 
 .loop:
-    MOV     r12, [rbp - 8]
-    CMP     r12, 5
+    MOV     r10, [rbp - 8]
+    CMP     r10, 5
     JE      .fim_leitura
 
-    # rsi recebe o local onde sera guardado a entrada 
-    # r13 o tamanho da entrada 
+    # rdi recebe o local onde sera guardado a entrada 
+    # rdx o tamanho da entrada 
     LEA     rdi, [lista_leitura]
-    MOV     r13, 2
+    MOV     rdx, 32
     CALL    .read_inteiro
+
+    # rdi entrada da funcao 
+    LEA     rdi, [lista_leitura]
+    CALL    .remove_newline
+
+    # rdi entrada da funcao 
+    # rax saida
+    LEA     rdi, [lista_leitura]
+    CALL    .converte_para_inteiro
+
+    MOV     r10, [rbp - 8]
+    MOV     [lista + r10 * 8], rax
 
     INC     qword ptr [rbp - 8]
     JMP     .loop
@@ -47,17 +59,19 @@ _start:
     SUB     rsp, 32
 
     MOV     rsi, rdi
-    MOV     rdx, r13
+    # MOV     rdx, r13
     MOV     rax, 0
     MOV     rdi, 0
     SYSCALL
+
+    MOV byte ptr [rsi + rax], 0
 
     LEAVE
     RET
 
 .remove_newline:
     PUSH    rbp
-    MOV     rbp, rsi
+    MOV     rbp, rsp
     SUB     rsp, 16
 
     MOV     rcx, 0
@@ -81,20 +95,26 @@ _start:
     LEAVE
     RET
 
+# Converte de ascii para inteiro
+#   Entrada -> rdi
+#   Saida   -> rax
 .converte_para_inteiro:
     PUSH    rbp
-    MOV     rbp, rsi
+    MOV     rbp, rsp
     SUB     rsp, 16
 
-    XOR     rcx, rcx
+    XOR     rcx, rcx                        # Zero o contador
+    XOR     rax, rax                        # Zera o registrador para receber o resultado
 
 .converte_para_inteiro_loop:
-    MOV     al, byte ptr [rdi + rcx]
-    CMP     al, 0x00
+    XOR     rdx, rdx
+    MOV     dl, byte ptr [rdi + rcx]
+    CMP     dl, 0x00
     JE      .fim_conversao_inteiro
 
-    
-    SUB     rdi, '0'
+    SUB     dl, '0'
+    IMUL    rax, rax, 10                    # rax = rax * 10
+    ADD     rax, rdx
 
     INC     rcx
     JMP     .converte_para_inteiro_loop
