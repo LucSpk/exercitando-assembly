@@ -13,26 +13,31 @@
     outbuf: .skip 32
 
 .section .data
-    calculadora_msg: .asciz "### CALCULADORA ###\n"
-    calculadora_end: calculadora_msg_len = calculadora_end - calculadora_msg
+    calculadora_msg: .asciz "|### CALCULADORA ###|\n"
+    calculadora_msg_len = . - calculadora_msg - 1
 
-    num_01_msg: .asciz "Digite o primeiro numero: "
+    base_line: .asciz "|-------------------|\n"
+    base_line_len = . - base_line - 1
+
+    num_01_msg: .asciz "Digite o primeiro numero: \0"
     num_01_msg_len = . - num_01_msg - 1
 
     num_02_msg: .asciz "Digite o segundo numero: \0"
     num_02_msg_len = . - num_02_msg - 1
-    opc_01: .asciz "1 - Soma\n"
-    opc_01_end: ocp_01_len = opc_01_end - opc_01
 
-    opc_02: .asciz "2 - Subtração\n"
-    opc_02_end: opc_02_len = opc_02_end - opc_02
+    opc_01: .asciz "| 1 - Soma          |\n"
+    ocp_01_len = . - opc_01 - 1
 
-    opc_03: .asciz "3 - Sair\n"
-    opc_03_end: opc_03_len = opc_03_end - opc_03
+    opc_02: .asciz "| 2 - Subtração     |\n"
+    opc_02_end = . - opc_02 - 1
+
+    opc_03: .asciz "| 3 - Sair          |\n"
+    opc_03_end = . - opc_03 - 1
 
     resltado_msg_01: .asciz "Resultado da operação = "
     resltado_msg_01_len = . - resltado_msg_01 - 1
 
+.section .text
 _start:
 
     CALL    .escreve_opcoes_tela
@@ -51,6 +56,24 @@ _start:
     MOV     rsi, calculadora_msg_len 
     CALL    .print_string
 
+    LEA     rdi, [opc_01]
+    MOV     rsi, ocp_01_len 
+    CALL    .print_string
+
+    LEA     rdi, [opc_02]
+    MOV     rsi, opc_02_end 
+    CALL    .print_string
+
+    LEA     rdi, [opc_03]
+    MOV     rsi, opc_03_end 
+    CALL    .print_string
+
+    LEA     rdi, [base_line]
+    MOV     rsi, base_line_len 
+    CALL    .print_string
+
+    JMP     .done
+
 .print_string: 
     PUSH    rbp
     MOV     rbp, rsp
@@ -64,6 +87,6 @@ _start:
 
     JMP     .done
 
-.done
+.done:
     LEAVE
     RET
