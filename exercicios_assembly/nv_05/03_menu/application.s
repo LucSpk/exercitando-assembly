@@ -54,14 +54,20 @@ _start:
     MOV     rbp, rsp
     SUB     rsp, 32
 
+.loop_recebe_entrada:
     LEA     rdi, [operacao]
     MOV     rsi, 4
     CALL    .read_teclado
 
     LEA     rdi, [operacao]
     CALL    .strip_newline
+    
+    MOV     al, byte ptr [operacao]
 
-    JMP     .done
+    CMP     al, '3'
+    JE      .done
+
+    JMP     .loop_recebe_entrada
 
 .escreve_opcoes_tela:
     PUSH    rbp
