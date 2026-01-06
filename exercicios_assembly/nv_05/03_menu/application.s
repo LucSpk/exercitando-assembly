@@ -8,6 +8,7 @@
 .intel_syntax noprefix
 
 .section .bss
+    operacao: .skip 32
     num_01: .skip 32
     num_02: .skip 32
     outbuf: .skip 32
@@ -41,11 +42,26 @@
 _start:
 
     CALL    .escreve_opcoes_tela
+    CALL    .recebe_entrada
 
 .exit:
     MOV     rax, 0x3c
     XOR     rdi, rdi
     SYSCALL
+
+.recebe_entrada:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+
+    LEA     rdi, [operacao]
+    MOV     rsi, 4
+    CALL    .read_teclado
+
+    LEA     rdi, [operacao]
+    CALL    .strip_newline
+
+    JMP     .done
 
 .escreve_opcoes_tela:
     PUSH    rbp
@@ -86,6 +102,43 @@ _start:
     SYSCALL
 
     JMP     .done
+
+
+.strip_newline:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 16
+
+    MOV     rcx, 0              # índice = 0
+
+.strip_loop:
+    MOV     al, byte ptr [rdi + rcx]
+    CMP     al, 0x0A            # '\n'?
+    JE      .replace_zero
+    CMP     al, 0x00            # fim da string?
+    JMP     .done
+    INC     rcx
+    JMP     .strip_loop
+
+.replace_zero:
+    MOV     byte ptr [rdi + rcx], 0x00
+
+    JMP     .done
+
+
+.read_teclado:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 16
+
+    MOV     rax, 0      # read
+    MOV     rdx, rsi    # tamanho
+    MOV     rsi, rdi    # buffer
+    MOV     rdi, 0      # stdin
+    SYSCALL
+
+    JMP     .done
+
 
 .done:
     LEAVE
