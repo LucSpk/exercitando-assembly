@@ -43,13 +43,21 @@ _start:
 
     CALL    .escreve_opcoes_tela
     CALL    .recebe_entrada
-    
 
 .exit:
     MOV     rax, 0x3c
     XOR     rdi, rdi
     SYSCALL
 
+.imprime_saida:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+
+    MOV     rdi, r13
+    CALL    .print_int
+
+    JMP .done
 
 .recebe_entrada:
     PUSH    rbp
@@ -82,6 +90,10 @@ _start:
 
     MOV     rax, rbx
     ADD     rax, r12
+
+    MOV     r13, rax
+    CALL    .imprime_saida
+
     JMP     .done
 
 .op_subtracao:
@@ -89,6 +101,10 @@ _start:
 
     MOV     rax, rbx
     SUB     rax, r12
+
+    MOV     r13, rax
+    CALL    .imprime_saida
+    
     JMP     .done
 
 
@@ -106,25 +122,25 @@ _start:
     CALL    .read_teclado
 
     LEA     rdi, [num_01]
+    CALL    .strip_newline
+
+    LEA     rdi, [num_01]
     CALL    .ascii_to_int
     MOV     rbx, rax
 
-
-    LEA     rdi, [num_01]
-    CALL    .strip_newline
 
     LEA     rdi, [num_02_msg]
     MOV     rsi, num_02_msg_len 
     CALL    .print_string
 
-    LEA     rdi, [num_01]
+    LEA     rdi, [num_02]
     MOV     rsi, 32
     CALL    .read_teclado
 
-    LEA     rdi, [num_01]
+    LEA     rdi, [num_02]
     CALL    .strip_newline
 
-    LEA     rdi, [num_01]
+    LEA     rdi, [num_02]
     CALL    .ascii_to_int
     MOV     r12, rax
 
@@ -184,7 +200,7 @@ _start:
     CMP     al, 0x0A            # '\n'?
     JE      .replace_zero
     CMP     al, 0x00            # fim da string?
-    JMP     .done
+    JE     .done
     INC     rcx
     JMP     .strip_loop
 
@@ -227,6 +243,36 @@ _start:
 
     INC     rcx
     JMP     .convert_loop
+
+    JMP     .done
+
+.print_int:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+
+    MOV     rax, rdi              # número a imprimir
+    LEA     rsi, [outbuf + 31]    # ponteiro no fim do buffer
+    MOV     byte ptr [rsi], 0x0A  # '\n'
+
+.convert_loop_print_int:
+    XOR     rdx, rdx
+    MOV     rcx, 10
+    DIV     rcx                   # rax = rax / 10 | rdx = resto
+
+    ADD     dl, '0'
+    DEC     rsi
+    MOV     byte ptr [rsi], dl
+
+    TEST    rax, rax
+    JNZ     .convert_loop_print_int
+
+    LEA     rdx, [outbuf + 32]
+    SUB     rdx, rsi
+
+    MOV     rax, 1
+    MOV     rdi, 1
+    SYSCALL
 
     JMP     .done
 
