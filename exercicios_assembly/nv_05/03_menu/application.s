@@ -43,11 +43,13 @@ _start:
 
     CALL    .escreve_opcoes_tela
     CALL    .recebe_entrada
+    
 
 .exit:
     MOV     rax, 0x3c
     XOR     rdi, rdi
     SYSCALL
+
 
 .recebe_entrada:
     PUSH    rbp
@@ -63,11 +65,71 @@ _start:
     CALL    .strip_newline
     
     MOV     al, byte ptr [operacao]
+    
+    CMP     al, '1'
+    JE      .op_soma
+
+    CMP     al, '2'
+    JE      .op_subtracao
 
     CMP     al, '3'
     JE      .done
 
     JMP     .loop_recebe_entrada
+
+.op_soma:
+    CALL    .ler_valores_entrada
+
+    MOV     rax, rbx
+    ADD     rax, r12
+    JMP     .done
+
+.op_subtracao:
+    CALL    .ler_valores_entrada
+
+    MOV     rax, rbx
+    SUB     rax, r12
+    JMP     .done
+
+
+.ler_valores_entrada:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 32
+    
+    LEA     rdi, [num_01_msg]
+    MOV     rsi, num_01_msg_len 
+    CALL    .print_string
+
+    LEA     rdi, [num_01]
+    MOV     rsi, 32
+    CALL    .read_teclado
+
+    LEA     rdi, [num_01]
+    CALL    .ascii_to_int
+    MOV     rbx, rax
+
+
+    LEA     rdi, [num_01]
+    CALL    .strip_newline
+
+    LEA     rdi, [num_02_msg]
+    MOV     rsi, num_02_msg_len 
+    CALL    .print_string
+
+    LEA     rdi, [num_01]
+    MOV     rsi, 32
+    CALL    .read_teclado
+
+    LEA     rdi, [num_01]
+    CALL    .strip_newline
+
+    LEA     rdi, [num_01]
+    CALL    .ascii_to_int
+    MOV     r12, rax
+
+    JMP     .done
+
 
 .escreve_opcoes_tela:
     PUSH    rbp
@@ -145,6 +207,28 @@ _start:
 
     JMP     .done
 
+
+.ascii_to_int:
+    PUSH    rbp
+    MOV     rbp, rsp
+    SUB     rsp, 16
+
+    XOR     rax, rax        # resultado = 0
+    XOR     rcx, rcx        # índice = 0
+
+.convert_loop:
+    MOV     dl, byte ptr [rdi + rcx]
+    CMP     dl, 0x00        # fim da string?
+    JE      .done
+
+    SUB     dl, '0'         # char -> número
+    IMUL    rax, rax, 10
+    ADD     rax, rdx
+
+    INC     rcx
+    JMP     .convert_loop
+
+    JMP     .done
 
 .done:
     LEAVE
