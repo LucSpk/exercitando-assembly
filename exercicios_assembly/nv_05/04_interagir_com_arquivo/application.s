@@ -10,7 +10,7 @@
 .section .text
 _start: 
     MOV     rax, 0x02
-    MOV     rdi, offset enderenco   # LEA   rdi, [enderenco] tambem funciona
+    LEA     rdi, [rip + enderenco]
     MOV     rsi, 0x00
     MOV     rdx, 0x00
     SYSCALL
@@ -27,11 +27,13 @@ _start:
     MOV     rax, 0               # syscall read
     MOV     rdi, r12
     LEA     rsi, [buffer]
-    MOV rdx, 256
+    MOV     rdx, 256
     SYSCALL
 
     TEST    rax, rax
     JS      .exit
+
+    MOV     r13, rax
 
     MOV     rax, 1               # syscall write
     MOV     rdi, 1               # stdout
